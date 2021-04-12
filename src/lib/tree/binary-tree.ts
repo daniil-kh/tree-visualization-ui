@@ -147,6 +147,23 @@ class BTree<T> implements ITree {
     return left >= right ? left : right;
   }
 
+  protected findHeightCorrection(
+    node: INode,
+    heightCorrection: number
+  ): number {
+    if (node === null) return 0;
+    if (node.left === null && node.right === null) return 0;
+
+    let correction = heightCorrection;
+
+    correction += this.findHeightCorrection(node.left, correction);
+    correction += this.findHeightCorrection(node.right, correction);
+
+    if (node.left !== null && node.right === null) return 1;
+    if (node.left === null && node.right !== null) return 1;
+    return correction;
+  }
+
   private getArrayOfNodes(
     node: BNode<T>,
     coordinates: Coordinates,
@@ -164,6 +181,7 @@ class BTree<T> implements ITree {
     };
 
     let accumulator: Array<RawDrawableNode<T>> = [];
+    let heightCorrection = this.findHeightCorrection(node, 0);
     let leftSubtree = this.getArrayOfNodes(
       node.left,
       {
@@ -171,36 +189,12 @@ class BTree<T> implements ITree {
           coordinates.x -
           (25 +
             (node.left && node.left.right
-              ? nodeOffsets(height - 1)
+              ? nodeOffsets(height - heightCorrection)
               : nodeOffsets(0))),
         y: coordinates.y + 50,
       },
-      height - 1
+      node.left && node.left.right ? height - 1 : 0
     );
-    let objToPush: any = { ...coordinates, data: node.data };
-    if (node.left !== null) {
-      objToPush = {
-        ...objToPush,
-        left: {
-          x:
-            coordinates.x -
-            (25 + (node.left.right ? nodeOffsets(height - 1) : nodeOffsets(0))),
-          y: coordinates.y + 50,
-        },
-      };
-    }
-    if (node.right !== null) {
-      objToPush = {
-        ...objToPush,
-        right: {
-          x:
-            coordinates.x +
-            (25 + (node.right.left ? nodeOffsets(height - 1) : nodeOffsets(0))),
-          y: coordinates.y + 50,
-        },
-      };
-    }
-    accumulator.push(objToPush);
     let rightSubtree = this.getArrayOfNodes(
       node.right,
       {
@@ -212,10 +206,43 @@ class BTree<T> implements ITree {
               : nodeOffsets(0))),
         y: coordinates.y + 50,
       },
-      height - 1
+      node.right && node.right.left ? height - heightCorrection : 0
     );
 
-    return accumulator;
+    let objToPush: any = { ...coordinates, data: node.data };
+    if (node.left !== null) {
+      objToPush = {
+        ...objToPush,
+        left: {
+          x:
+            coordinates.x -
+            (25 +
+              (node.left.right
+                ? nodeOffsets(height - heightCorrection)
+                : nodeOffsets(0))),
+          y: coordinates.y + 50,
+        },
+      };
+    }
+    if (node.right !== null) {
+      objToPush = {
+        ...objToPush,
+        right: {
+          x:
+            coordinates.x +
+            (25 +
+              (node.right.left
+                ? nodeOffsets(height - heightCorrection)
+                : nodeOffsets(0))),
+          y: coordinates.y + 50,
+        },
+      };
+    }
+
+    return accumulator
+      .concat(leftSubtree)
+      .concat([objToPush])
+      .concat(rightSubtree);
   }
 }
 
