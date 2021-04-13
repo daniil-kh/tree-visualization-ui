@@ -26,20 +26,23 @@ export const drawBNode = <T>(
   ctx.font = "20px Arial";
   ctx.textAlign = "center";
   ctx.fillText((node.data as unknown) as string, node.x, node.y + 7);
-  if (node.left) {
+  if (node.parent) {
     const hypotenuse = Math.sqrt(
-      Math.pow(node.left.x - node.x, 2) + Math.pow(node.left.y - node.y, 2)
+      Math.pow(node.x - node.parent.x, 2) + Math.pow(node.y - node.parent.y, 2)
     );
     const X: number = Math.abs(
-      ((node.left.x - node.x) / hypotenuse) * circleRadius
+      ((node.x - node.parent.x) / hypotenuse) * circleRadius
     );
     const Y: number = Math.sqrt(Math.pow(circleRadius, 2) - Math.pow(X, 2));
 
-    ctx.moveTo(node.x - X, node.y + Y);
-    ctx.lineTo(node.left.x + X, node.left.y - Y);
+    ctx.moveTo(
+      node.parent.x + (node.x > node.parent.x ? X : -X),
+      node.parent.y + Y
+    );
+    ctx.lineTo(node.x + (node.x > node.parent.x ? -X : X), node.y - Y);
     ctx.stroke();
   }
-  if (node.right) {
+  /*if (node.right) {
     const hypotenuse = Math.sqrt(
       Math.pow(node.right.x - node.x, 2) + Math.pow(node.right.y - node.y, 2)
     );
@@ -51,5 +54,5 @@ export const drawBNode = <T>(
     ctx.moveTo(node.x + X, node.y + Y);
     ctx.lineTo(node.right.x - X, node.right.y - Y);
     ctx.stroke();
-  }
+  }*/
 };

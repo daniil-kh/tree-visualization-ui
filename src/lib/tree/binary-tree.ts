@@ -130,11 +130,28 @@ class BTree<T> implements ITree {
   }
 
   public getNodes(coordinates: Coordinates): Array<RawDrawableNode<T>> {
-    return this.getArrayOfNodes(
+    /*let nodesToDrawArr = this.getArrayOfNodes(
       this.root as BNode<T>,
       coordinates,
       this.findHeight(this.root, 0)
     );
+    let countOfNodesOfEachLayer = this.getNodeGapArray();*/
+
+    let tree = this.getArrayOfLeftSubtreeNodes(
+      this.root.left as BNode<T>,
+      coordinates,
+      1
+    )
+      .concat([{ data: (this.root as BNode<T>).data, ...coordinates }])
+      .concat(
+        this.getArrayOfRightSubtreeNodes(
+          this.root.right as BNode<T>,
+          coordinates,
+          1
+        )
+      );
+
+    return tree;
   }
 
   protected findHeight(node: INode, height: number): number {
@@ -147,24 +164,82 @@ class BTree<T> implements ITree {
     return left >= right ? left : right;
   }
 
+  protected findLayersFullness(node: INode, height: number): Array<number> {
+    if (node === null) return [];
+
+    let nodeArrayLeft: Array<number> = this.findLayersFullness(
+      node.left,
+      height + 1
+    );
+    let nodeArrayRight: Array<number> = this.findLayersFullness(
+      node.right,
+      height + 1
+    );
+    let nodeArray = nodeArrayLeft.concat([height]).concat(nodeArrayRight);
+
+    return nodeArray;
+  }
+
+  protected getNodeGapArray(): Array<number> {
+    let fullnessArray: Array<number> = this.findLayersFullness(this.root, 0);
+    let treeHeight: number = this.findHeight(this.root, 0);
+    let countOfElementsOnEachLayer: Array<number> = [];
+    for (let i = 0; i <= treeHeight; ++i) {
+      countOfElementsOnEachLayer[
+        i
+      ] = fullnessArray.reduce((accumulator, currentValue) =>
+        currentValue === i ? accumulator + 1 : 0
+      );
+    }
+
+    return countOfElementsOnEachLayer;
+  }
+
+  protected checkIfMirrorNodeExists(
+    target: INode,
+    left: INode,
+    right: INode
+  ): boolean {
+    if (target === null) return false;
+    if (target.equal(this.root)) return true;
+    if (left === null || right === null) return false;
+    if (left.equal(target)) return right !== null;
+    if (right.equal(target)) return left !== null;
+
+    let checkResult = this.checkIfMirrorNodeExists(
+      target,
+      left.left,
+      right.right
+    );
+
+    if (checkResult) return checkResult;
+
+    return this.checkIfMirrorNodeExists(target, left.right, right.left);
+  }
+
   protected findHeightCorrection(
     node: INode,
-    heightCorrection: number
+    heightCorrection: number,
+    direction: SubtreeDirection
   ): number {
-    if (node === null) return 0;
-    if (node.left === null && node.right === null) return 0;
+    if (!node) return heightCorrection;
+    if (node.left === null && node.right === null) return heightCorrection;
 
     let correction = heightCorrection;
 
-    correction += this.findHeightCorrection(node.left, correction);
-    correction += this.findHeightCorrection(node.right, correction);
+    let correctionPrime = this.findHeightCorrection(
+      node[direction],
+      correction,
+      direction
+    );
 
-    if (node.left !== null && node.right === null) return 1;
-    if (node.left === null && node.right !== null) return 1;
+    correction = correctionPrime;
+
+    if (node[direction] !== null) return correction + 1;
     return correction;
   }
 
-  private getArrayOfNodes(
+  protected getArrayOfLeftSubtreeNodes(
     node: BNode<T>,
     coordinates: Coordinates,
     height: number
@@ -181,63 +256,81 @@ class BTree<T> implements ITree {
     };
 
     let accumulator: Array<RawDrawableNode<T>> = [];
-    let heightCorrection = this.findHeightCorrection(node, 0);
-    let leftSubtree = this.getArrayOfNodes(
-      node.left,
-      {
-        x:
-          coordinates.x -
-          (25 +
-            (node.left && node.left.right
-              ? nodeOffsets(height - heightCorrection)
-              : nodeOffsets(0))),
-        y: coordinates.y + 50,
-      },
-      node.left && node.left.right ? height - 1 : 0
-    );
-    let rightSubtree = this.getArrayOfNodes(
-      node.right,
-      {
-        x:
-          coordinates.x +
-          (25 +
-            (node.right && node.right.left
-              ? nodeOffsets(height - 1)
-              : nodeOffsets(0))),
-        y: coordinates.y + 50,
-      },
-      node.right && node.right.left ? height - heightCorrection : 0
+    let objToPush: RawDrawableNode<T> = {
+      parent: { ...coordinates },
+      data: node.data,
+      x: coordinates.x - 50,
+      y: coordinates.y + 50,
+    };
+
+    let ifMirrorNodeExist = this.checkIfMirrorNodeExists(
+      node,
+      node.parent?.parent?.left,
+      node.parent?.parent?.right
     );
 
-    let objToPush: any = { ...coordinates, data: node.data };
-    if (node.left !== null) {
-      objToPush = {
-        ...objToPush,
-        left: {
-          x:
-            coordinates.x -
-            (25 +
-              (node.left.right
-                ? nodeOffsets(height - heightCorrection)
-                : nodeOffsets(0))),
-          y: coordinates.y + 50,
-        },
-      };
+    let leftSubtree = this.getArrayOfLeftSubtreeNodes(
+      node.left,
+      {
+        x: objToPush.x,
+        y: objToPush.y,
+      },
+      height - 1
+    );
+    let rightSubtree = this.getArrayOfRightSubtreeNodes(
+      node.right,
+      {
+        x: objToPush.x,
+        y: objToPush.y,
+      },
+      height - 1
+    );
+
+    return accumulator
+      .concat(leftSubtree)
+      .concat([objToPush])
+      .concat(rightSubtree);
+  }
+
+  protected getArrayOfRightSubtreeNodes(
+    node: BNode<T>,
+    coordinates: Coordinates,
+    height: number
+  ): Array<RawDrawableNode<T>> {
+    if (node === null) {
+      return [];
     }
-    if (node.right !== null) {
-      objToPush = {
-        ...objToPush,
-        right: {
-          x:
-            coordinates.x +
-            (25 +
-              (node.right.left
-                ? nodeOffsets(height - heightCorrection)
-                : nodeOffsets(0))),
-          y: coordinates.y + 50,
-        },
-      };
-    }
+    const nodeOffsets = (amount: number): number => {
+      if (amount <= 0) {
+        return 0;
+      }
+
+      return Math.pow(5, 2) * Math.pow(2, amount - 1) + nodeOffsets(amount - 1);
+    };
+
+    let accumulator: Array<RawDrawableNode<T>> = [];
+    let objToPush: RawDrawableNode<T> = {
+      parent: { ...coordinates },
+      data: node.data,
+      x: coordinates.x + 50,
+      y: coordinates.y + 50,
+    };
+    let leftSubtree = this.getArrayOfLeftSubtreeNodes(
+      node.left,
+      {
+        x: objToPush.x,
+        y: objToPush.y,
+      },
+      height - 1
+    );
+    let rightSubtree = this.getArrayOfRightSubtreeNodes(
+      node.right,
+      {
+        x: objToPush.x,
+        y: objToPush.y,
+      },
+      height - 1
+    );
 
     return accumulator
       .concat(leftSubtree)
@@ -245,5 +338,7 @@ class BTree<T> implements ITree {
       .concat(rightSubtree);
   }
 }
+
+type SubtreeDirection = "right" | "left";
 
 export default BTree;

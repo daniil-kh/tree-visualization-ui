@@ -8,8 +8,7 @@ export type DrawableNode<T> = RawDrawableNode<T> & {
 };
 
 export type RawDrawableNode<T> = Coordinates & {
-  left: Coordinates;
-  right: Coordinates;
+  parent?: Coordinates;
   data: T;
   color?: Color;
 };
