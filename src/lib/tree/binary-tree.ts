@@ -18,21 +18,21 @@ class BTree<T> implements ITree {
     this.addNode(this.root, node);
   }
 
-  protected addNode(currentNode: INode, insetrtedNode: INode): void {
-    if (currentNode.compare(insetrtedNode) > 0) {
+  protected addNode(currentNode: INode, insertedNode: INode): void {
+    if (currentNode.compare(insertedNode) > 0) {
       if (currentNode.left === null) {
-        currentNode.left = insetrtedNode;
-        insetrtedNode.parent = currentNode;
+        currentNode.left = insertedNode;
+        insertedNode.parent = currentNode;
       } else {
-        this.addNode(currentNode.left, insetrtedNode);
+        this.addNode(currentNode.left, insertedNode);
       }
     }
-    if (currentNode.compare(insetrtedNode) <= 0) {
+    if (currentNode.compare(insertedNode) <= 0) {
       if (currentNode.right === null) {
-        currentNode.right = insetrtedNode;
-        insetrtedNode.parent = currentNode;
+        currentNode.right = insertedNode;
+        insertedNode.parent = currentNode;
       } else {
-        this.addNode(currentNode.right, insetrtedNode);
+        this.addNode(currentNode.right, insertedNode);
       }
     }
   }
