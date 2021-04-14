@@ -11,6 +11,8 @@ export type RawDrawableNode<T> = Coordinates & {
   parent?: Coordinates;
   data: T;
   color?: Color;
+  preliminary: number;
+  modifier: number;
 };
 
 export type Coordinates = {

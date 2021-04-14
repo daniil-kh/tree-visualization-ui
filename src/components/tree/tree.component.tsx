@@ -5,6 +5,7 @@ import Canvas from "../canvas/canvas.component";
 import { getDrawableTree, drawBNode } from "./tree.utils";
 
 import * as TreeLib from "../../lib/tree/index";
+import { DrawableNode } from "../../global.types";
 
 const Tree: React.FC<object> = (props: object): JSX.Element => {
   const tree: TreeLib.BTree<number> = new TreeLib.BTree<number>();
@@ -63,7 +64,7 @@ const Tree: React.FC<object> = (props: object): JSX.Element => {
   ];
   //const arr : Array<number> = [4, 3, 2, 6, 5, 3]
   arr.forEach((el) => tree.add(new TreeLib.BNode<number>(el)));
-  const drawableArr = getDrawableTree(tree);
+  const drawableArr: Array<DrawableNode<number>> = getDrawableTree(tree);
 
   return (
     <Canvas data={drawableArr} draw={(ctx, el) => drawBNode<number>(ctx, el)} />

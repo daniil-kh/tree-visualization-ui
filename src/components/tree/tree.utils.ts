@@ -42,17 +42,4 @@ export const drawBNode = <T>(
     ctx.lineTo(node.x + (node.x > node.parent.x ? -X : X), node.y - Y);
     ctx.stroke();
   }
-  /*if (node.right) {
-    const hypotenuse = Math.sqrt(
-      Math.pow(node.right.x - node.x, 2) + Math.pow(node.right.y - node.y, 2)
-    );
-    const X: number = Math.abs(
-      ((node.right.x - node.x) / hypotenuse) * circleRadius
-    );
-    const Y: number = Math.sqrt(Math.pow(circleRadius, 2) - Math.pow(X, 2));
-
-    ctx.moveTo(node.x + X, node.y + Y);
-    ctx.lineTo(node.right.x - X, node.right.y - Y);
-    ctx.stroke();
-  }*/
 };
