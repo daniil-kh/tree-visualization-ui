@@ -132,7 +132,7 @@ class BTree<T> implements ITree {
   public getNodes(coordinates: Coordinates): Array<RawDrawableNode<T>> {
     //this.show();
     //console.log("After positioning");
-    this.positionTree(this.root, coordinates);
+    this.positionTree(coordinates);
     //this.show();
 
     //console.log("--------------------------------------------\n");
@@ -172,26 +172,25 @@ class BTree<T> implements ITree {
     return left >= right ? left : right;
   }
 
-  protected positionTree(node: INode, coordinates: Coordinates): boolean {
-    if (node !== null) {
-      this.firstWalk(node, 0, this.findHeight(this.root, 0));
-
-      let xTopAdjustment = coordinates.x - node.preliminary;
+  protected positionTree(coordinates: Coordinates): boolean {
+    if (this.root !== null) {
+      this.firstWalk(this.root, 0, this.findHeight(this.root, 0));
+      let xTopAdjustment = coordinates.x - this.root.preliminary;
       let yTopAdjustment = coordinates.y;
-
-      return this.secondWalk(
-        node,
+      let result: boolean = this.secondWalk(
+        this.root,
         0,
         0,
         xTopAdjustment,
         yTopAdjustment,
         this.findHeight(this.root, 0)
       );
+      return result;
     } else return true;
   }
 
   protected firstWalk(node: INode, level: number, maxDepth: number): void {
-    console.log("FIRSTWALK");
+    //console.log("FIRSTWALK");
     node.modifier = 0;
     if (this.isLeaf(node) || level === maxDepth) {
       if (this.getLeftSibling(node) !== null) {
@@ -202,13 +201,10 @@ class BTree<T> implements ITree {
       } else node.preliminary = 0;
     } else {
       let leftmost: INode = this.getFirstChild(node);
-      let rightmost: INode = this.getLastChild(node);
+      let rightmost: INode = this.getFirstChild(node);
       this.firstWalk(leftmost, level + 1, maxDepth);
       while (this.getRightSibling(rightmost) !== null) {
         rightmost = this.getRightSibling(rightmost);
-        //rightmost = rightmost
-        //  ? rightmost.clone()
-        //  : ((null as unknown) as INode);
         this.firstWalk(rightmost, level + 1, maxDepth);
       }
       let midPoint: number = (leftmost.preliminary + rightmost.preliminary) / 2;
@@ -231,7 +227,7 @@ class BTree<T> implements ITree {
     yTopAdjustment: number,
     maxDepth: number
   ): boolean {
-    console.log(node);
+    console.log((node as BNode<T>).data);
     let result = true;
     if (level <= maxDepth) {
       let xTemp: number = xTopAdjustment + node.preliminary + modsum;
@@ -239,15 +235,28 @@ class BTree<T> implements ITree {
 
       node.x = xTemp;
       node.y = yTemp;
-      if (this.hasChild(node)) {
-        result = this.secondWalk(
-          this.getFirstChild(node),
-          level + 1,
-          modsum + node.modifier,
-          xTopAdjustment,
-          yTopAdjustment,
-          maxDepth
-        );
+      if (node.equal(this.root)) {
+        if (this.getFirstChild(node) !== null) {
+          result = this.secondWalk(
+            this.getFirstChild(node),
+            level + 1,
+            modsum + node.modifier,
+            xTopAdjustment,
+            yTopAdjustment,
+            maxDepth
+          );
+        }
+      } else {
+        if (this.getFirstChild(node) !== null) {
+          result = this.secondWalk(
+            this.getFirstChild(node),
+            level + 1,
+            modsum + node.modifier,
+            xTopAdjustment,
+            yTopAdjustment,
+            maxDepth
+          );
+        }
 
         if (result && this.getRightSibling(node) !== null) {
           result = this.secondWalk(
@@ -267,12 +276,12 @@ class BTree<T> implements ITree {
 
   protected apportion(node: INode, level: number, maxDepth: number): void {
     let leftmost: INode = this.getFirstChild(node);
-    //leftmost = leftmost ? leftmost.clone() : ((null as unknown) as INode);
+    let nodeLayer = this.getNodeLayer(this.root, leftmost);
     let neighbor: INode = this.getLeftNeighbor(
-      node.parent,
-      node,
-      level - 1,
-      level
+      leftmost.parent,
+      leftmost,
+      nodeLayer - 1,
+      nodeLayer
     );
     let compareDepth: number = 1;
     let depthToStop = maxDepth - level;
@@ -283,18 +292,14 @@ class BTree<T> implements ITree {
     ) {
       let leftModsum = 0;
       let rightModsum = 0;
-      let ancestorLeftmost = leftmost; //.clone();
-      let ancestorNeighbor = neighbor; //.clone();
+      let ancestorLeftmost = leftmost;
+      let ancestorNeighbor = neighbor;
       for (let i: number = 0; i < compareDepth; ++i) {
         ancestorLeftmost = ancestorLeftmost.parent;
-        //? ancestorLeftmost.parent.clone()
-        //: ((null as unknown) as INode);
         ancestorNeighbor = ancestorNeighbor.parent;
-        //? ancestorNeighbor.parent.clone()
-        //: ((null as unknown) as INode);
 
-        rightModsum = rightModsum + ancestorLeftmost.modifier;
-        leftModsum = leftModsum + ancestorNeighbor.modifier;
+        rightModsum += ancestorLeftmost.modifier;
+        leftModsum += ancestorNeighbor.modifier;
       }
 
       let moveDistance: number =
@@ -306,23 +311,20 @@ class BTree<T> implements ITree {
 
       if (moveDistance > 0) {
         let leftSiblings: number = 0;
-        let tempPtr: INode = node.clone();
-        while (tempPtr !== null && tempPtr !== ancestorNeighbor) {
+        let tempPtr: INode = node;
+        while (tempPtr !== null && !tempPtr.equal(ancestorNeighbor)) {
           leftSiblings += 1;
           tempPtr = this.getLeftSibling(tempPtr);
-          //tempPtr = tempPtr ? tempPtr.clone() : ((null as unknown) as INode);
         }
 
         if (tempPtr !== null) {
           let portion = moveDistance / leftSiblings;
-          tempPtr = node.clone();
-          while (tempPtr !== ancestorNeighbor) {
-            let originalNode: INode = this.find(tempPtr);
-            originalNode.preliminary = originalNode.preliminary + moveDistance;
-            originalNode.modifier = originalNode.modifier + moveDistance;
+          tempPtr = node;
+          while (tempPtr !== null && !tempPtr.equal(ancestorNeighbor)) {
+            tempPtr.preliminary += moveDistance;
+            tempPtr.modifier += moveDistance;
             moveDistance -= portion;
             tempPtr = this.getLeftSibling(tempPtr);
-            //tempPtr = tempPtr ? tempPtr.clone() : ((null as unknown) as INode);
           }
         } else return;
       }
@@ -334,14 +336,14 @@ class BTree<T> implements ITree {
         leftmost = this.getFirstChild(leftmost);
       }
       if (leftmost) {
+        nodeLayer = this.getNodeLayer(this.root, leftmost);
         neighbor = this.getLeftNeighbor(
           leftmost.parent,
           leftmost,
-          level - 1,
-          level
+          nodeLayer - 1,
+          nodeLayer
         );
       }
-      //leftmost = leftmost ? leftmost.clone() : ((null as unknown) as INode);
     }
   }
 
@@ -354,13 +356,9 @@ class BTree<T> implements ITree {
     else if (this.isLeaf(node)) return (null as unknown) as INode;
     else {
       let rightmost = this.getFirstChild(node);
-      rightmost = rightmost ? rightmost.clone() : ((null as unknown) as INode);
       let leftmost = this.getLeftmostOffspring(rightmost, level + 1, depth);
       while (leftmost === null && this.getRightSibling(rightmost) !== null) {
         rightmost = this.getRightSibling(rightmost);
-        rightmost = rightmost
-          ? rightmost.clone()
-          : ((null as unknown) as INode);
         leftmost = this.getLeftmostOffspring(rightmost, level + 1, depth);
       }
       return leftmost;
@@ -376,11 +374,9 @@ class BTree<T> implements ITree {
     else if (this.isLeaf(node)) return (null as unknown) as INode;
     else {
       let leftmost = this.getLastChild(node);
-      leftmost = leftmost ? leftmost.clone() : ((null as unknown) as INode);
       let rightmost = this.getRightmostOffspring(leftmost, level + 1, depth);
       while (rightmost === null && this.getLeftSibling(leftmost) !== null) {
         leftmost = this.getLeftSibling(leftmost);
-        leftmost = leftmost ? leftmost.clone() : ((null as unknown) as INode);
         rightmost = this.getRightmostOffspring(leftmost, level + 1, depth);
       }
       return rightmost;
@@ -388,6 +384,7 @@ class BTree<T> implements ITree {
   }
 
   protected getFirstChild(node: INode): INode {
+    if (node === null) return (null as unknown) as INode;
     if (node && node.left) return node.left;
     if (node && node.right) return node.right;
 
@@ -411,7 +408,7 @@ class BTree<T> implements ITree {
     return (null as unknown) as INode;
   }
 
-  protected getLeftSibling(node: INode) {
+  protected getLeftSibling(node: INode): INode {
     if (node && node.parent) {
       if (node.parent.left && node.parent.left.equal(node))
         return (null as unknown) as INode;
@@ -419,6 +416,18 @@ class BTree<T> implements ITree {
     }
 
     return (null as unknown) as INode;
+  }
+
+  protected getNodeLayer(currentNode: INode, node: INode): number {
+    if (currentNode === null || node === null) return 0;
+    if (currentNode.equal(node)) {
+      return 0;
+    }
+    if (currentNode.compare(node) > 0) {
+      return 1 + this.getNodeLayer(currentNode.right, node);
+    } else {
+      return 1 + this.getNodeLayer(currentNode.left, node);
+    }
   }
 
   protected getLeftNeighbor(
@@ -473,8 +482,8 @@ class BTree<T> implements ITree {
   }
 }
 
-const siblingSeparation: number = 50;
+const siblingSeparation: number = 10;
 const levelSeparation: number = 50;
-const subtreeSeparation: number = 60;
+const subtreeSeparation: number = 20;
 
 export default BTree;
