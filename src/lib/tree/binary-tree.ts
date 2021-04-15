@@ -132,10 +132,14 @@ class BTree<T> implements ITree {
   public getNodes(coordinates: Coordinates): Array<RawDrawableNode<T>> {
     //this.show();
     //console.log("After positioning");
-    this.positionTree(coordinates);
+    //this.positionTree(coordinates);
     //this.show();
 
     //console.log("--------------------------------------------\n");
+
+    console.log(
+      this.getNodeLayer(this.root, this.find(new BNode<T>((1 as unknown) as T)))
+    );
 
     let nodes = this.getArrayOfNodes(this.root as BNode<T>);
     //console.log(nodes);
@@ -190,7 +194,7 @@ class BTree<T> implements ITree {
   }
 
   protected firstWalk(node: INode, level: number, maxDepth: number): void {
-    //console.log("FIRSTWALK");
+    console.log("FIRSTWALK");
     node.modifier = 0;
     if (this.isLeaf(node) || level === maxDepth) {
       if (this.getLeftSibling(node) !== null) {
@@ -227,54 +231,56 @@ class BTree<T> implements ITree {
     yTopAdjustment: number,
     maxDepth: number
   ): boolean {
-    console.log((node as BNode<T>).data);
+    console.log("SECONDWALK");
     let result = true;
     if (level <= maxDepth) {
+      /*if (node.equal(this.root)) {
+        if (this.getFirstChild(node) !== null) {
+          result = this.secondWalk(
+            this.getFirstChild(node),
+            level + 1,
+            modsum + node.modifier,
+            xTopAdjustment,
+            yTopAdjustment,
+            maxDepth
+          );
+        }
+      } else {*/
+      if (this.getFirstChild(node) !== null) {
+        result = this.secondWalk(
+          this.getFirstChild(node),
+          level + 1,
+          modsum + node.modifier,
+          xTopAdjustment,
+          yTopAdjustment,
+          maxDepth
+        );
+      }
+
       let xTemp: number = xTopAdjustment + node.preliminary + modsum;
       let yTemp: number = yTopAdjustment + level * levelSeparation;
 
       node.x = xTemp;
       node.y = yTemp;
-      if (node.equal(this.root)) {
-        if (this.getFirstChild(node) !== null) {
-          result = this.secondWalk(
-            this.getFirstChild(node),
-            level + 1,
-            modsum + node.modifier,
-            xTopAdjustment,
-            yTopAdjustment,
-            maxDepth
-          );
-        }
-      } else {
-        if (this.getFirstChild(node) !== null) {
-          result = this.secondWalk(
-            this.getFirstChild(node),
-            level + 1,
-            modsum + node.modifier,
-            xTopAdjustment,
-            yTopAdjustment,
-            maxDepth
-          );
-        }
 
-        if (result && this.getRightSibling(node) !== null) {
-          result = this.secondWalk(
-            this.getRightSibling(node),
-            level,
-            modsum,
-            xTopAdjustment,
-            yTopAdjustment,
-            maxDepth
-          );
-        }
+      if (result && this.getRightSibling(node) !== null) {
+        result = this.secondWalk(
+          this.getRightSibling(node),
+          level, // here the question
+          modsum,
+          xTopAdjustment,
+          yTopAdjustment,
+          maxDepth
+        );
       }
+      //}
     } else result = true;
 
     return result;
   }
 
   protected apportion(node: INode, level: number, maxDepth: number): void {
+    //console.log();
     let leftmost: INode = this.getFirstChild(node);
     let nodeLayer = this.getNodeLayer(this.root, leftmost);
     let neighbor: INode = this.getLeftNeighbor(
@@ -399,23 +405,13 @@ class BTree<T> implements ITree {
   }
 
   protected getRightSibling(node: INode): INode {
-    if (node && node.parent) {
-      if (node.parent.right && node.parent.right.equal(node))
-        return (null as unknown) as INode;
-      else return node.parent.right;
-    }
-
-    return (null as unknown) as INode;
+    let layer = this.getNodeLayer(this.root, node);
+    return this.getRightNeighbor(node.parent, node, layer - 1, layer);
   }
 
   protected getLeftSibling(node: INode): INode {
-    if (node && node.parent) {
-      if (node.parent.left && node.parent.left.equal(node))
-        return (null as unknown) as INode;
-      else return node.parent.left;
-    }
-
-    return (null as unknown) as INode;
+    let layer = this.getNodeLayer(this.root, node);
+    return this.getLeftNeighbor(node.parent, node, layer - 1, layer);
   }
 
   protected getNodeLayer(currentNode: INode, node: INode): number {
@@ -430,12 +426,45 @@ class BTree<T> implements ITree {
     }
   }
 
+  protected getRightNeighbor(
+    currentNode: INode,
+    node: INode,
+    currentDepth: number,
+    nodeDepth: number
+  ): INode {
+    console.log("RightNeighbor");
+    if (node === null || currentNode === null)
+      return (null as unknown) as INode;
+    if (currentNode.equal(this.root)) {
+      let neighbor = this.getLeftmostOffspring(currentNode.right, 0, nodeDepth);
+      if (neighbor && neighbor.equal(node)) return (null as unknown) as INode;
+      else return neighbor;
+    }
+
+    let neighbor = this.getLeftmostOffspring(
+      currentNode.right,
+      currentDepth + 1,
+      nodeDepth
+    );
+    //console.log([currentNode, node, neighbor]);
+    if (neighbor === null || neighbor.equal(node))
+      return this.getRightNeighbor(
+        currentNode.parent,
+        node,
+        currentDepth - 1,
+        nodeDepth
+      );
+
+    return neighbor;
+  }
+
   protected getLeftNeighbor(
     currentNode: INode,
     node: INode,
     currentDepth: number,
     nodeDepth: number
   ): INode {
+    console.log("LeftNeighbor");
     if (node === null || currentNode === null)
       return (null as unknown) as INode;
     if (currentNode.equal(this.root)) {
