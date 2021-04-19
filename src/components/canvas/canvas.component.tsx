@@ -21,7 +21,16 @@ const Canvas: React.FC<Props<any>> = (props: Props<any>) => {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
   }, [data, draw]);
 
-  return <canvas ref={canvasRef} width={1920} height={720} {...rest}></canvas>;
+  return (
+    <canvas
+      ref={canvasRef}
+      width={window.innerWidth * 0.8}
+      height={window.innerHeight * 0.5}
+      {...rest}
+    >
+      Sorry, your browser is not supported
+    </canvas>
+  );
 };
 
 export default Canvas;
