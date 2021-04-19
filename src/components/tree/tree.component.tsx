@@ -8,7 +8,7 @@ import * as TreeLib from "../../lib/tree/index";
 import { DrawableNode } from "../../global.types";
 
 const Tree: React.FC<object> = (props: object): JSX.Element => {
-  const tree: TreeLib.LevelBasedDrawableTree<number> = new TreeLib.LevelBasedDrawableTree<number>(
+  const tree: TreeLib.LevelBasedDrawableRBTree<number> = new TreeLib.LevelBasedDrawableRBTree<number>(
     100,
     50
   );
@@ -66,7 +66,7 @@ const Tree: React.FC<object> = (props: object): JSX.Element => {
     41,
   ];
   //const arr : Array<number> = [4, 3, 2, 6, 5, 3]
-  arr.forEach((el) => tree.add(new TreeLib.BNode<number>(el)));
+  arr.forEach((el) => tree.add(new TreeLib.RBNode<number>(el)));
   const drawableArr: Array<DrawableNode<number>> = getDrawableTree(tree);
 
   return (

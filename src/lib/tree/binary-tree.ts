@@ -1,7 +1,6 @@
-import { INode } from './types/node';
-import { ITree } from './types/tree';
-import BNode from './binary-node';
-import { RawDrawableNode } from '../../global.types';
+import { INode } from "./types/node";
+import { ITree } from "./types/tree";
+import BNode from "./binary-node";
 
 class BTree<T> implements ITree {
   protected root: INode;
@@ -125,28 +124,9 @@ class BTree<T> implements ITree {
       return;
     }
     this.showTree(node.left, height + 1);
-    let output: string = '-'.repeat(height) + '>' + node.content();
+    let output: string = "-".repeat(height) + ">" + node.content();
     console.log(output);
     this.showTree(node.right, height + 1);
-  }
-
-  protected getArrayOfNodes(node: BNode<T>): Array<RawDrawableNode<T>> {
-    if (node === null) return [];
-
-    let objToPush: RawDrawableNode<T> = {
-      x: node.x,
-      y: node.y,
-      data: node.data,
-      preliminary: node.preliminary,
-      modifier: node.modifier,
-    };
-    if (node.parent) {
-      objToPush.parent = { x: node.parent.x, y: node.parent.y };
-    }
-
-    return this.getArrayOfNodes(node.left)
-      .concat([objToPush])
-      .concat(this.getArrayOfNodes(node.right));
   }
 
   protected findHeight(node: INode, height: number): number {

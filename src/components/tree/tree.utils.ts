@@ -18,8 +18,10 @@ export const drawBNode = <T>(
 ) => {
   let circleRadius = 20;
   ctx.beginPath();
+  ctx.strokeStyle = node.color ? node.color : "#000000";
   ctx.arc(node.x, node.y, circleRadius, 0, 2 * Math.PI);
   ctx.stroke();
+  //ctx.strokeStyle = "#000000";
   ctx.font = "20px Arial";
   ctx.textAlign = "center";
   ctx.fillText((node.data as unknown) as string, node.x, node.y + 7);
@@ -39,4 +41,5 @@ export const drawBNode = <T>(
     ctx.lineTo(node.x + (node.x > node.parent.x ? -X : X), node.y - Y);
     ctx.stroke();
   }
+  ctx.strokeStyle = "#000000";
 };

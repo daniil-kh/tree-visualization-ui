@@ -1,7 +1,7 @@
-import { INode } from './types/node';
-import BNode from './binary-node';
-import BTree from './binary-tree';
-import { Coordinates, RawDrawableNode } from '../../global.types';
+import { INode } from "./types/node";
+import BNode from "./binary-node";
+import BTree from "./binary-tree";
+import { Coordinates, RawDrawableNode } from "../../global.types";
 
 class WalkerDrawableTree<T> extends BTree<T> {
   public getNodes(coordinates: Coordinates): Array<RawDrawableNode<T>> {
@@ -288,7 +288,7 @@ class WalkerDrawableTree<T> extends BTree<T> {
     currentDepth: number,
     nodeDepth: number
   ): INode {
-    console.log('RightNeighbor');
+    console.log("RightNeighbor");
     if (node === null || currentNode === null)
       return (null as unknown) as INode;
     if (currentDepth >= nodeDepth) return node;
@@ -346,6 +346,25 @@ class WalkerDrawableTree<T> extends BTree<T> {
       );
 
     return neighbor;
+  }
+
+  protected getArrayOfNodes(node: BNode<T>): Array<RawDrawableNode<T>> {
+    if (node === null) return [];
+
+    let objToPush: RawDrawableNode<T> = {
+      x: node.x,
+      y: node.y,
+      data: node.data,
+      preliminary: node.preliminary,
+      modifier: node.modifier,
+    };
+    if (node.parent) {
+      objToPush.parent = { x: node.parent.x, y: node.parent.y };
+    }
+
+    return this.getArrayOfNodes(node.left)
+      .concat([objToPush])
+      .concat(this.getArrayOfNodes(node.right));
   }
 
   protected meanNodeSize(): number {

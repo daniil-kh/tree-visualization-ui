@@ -11,6 +11,8 @@ const Canvas: React.FC<Props<any>> = (props: Props<any>) => {
     const canvas: HTMLCanvasElement = canvasRef.current!;
     const context: CanvasRenderingContext2D = canvas.getContext("2d")!;
 
+    context.restore();
+
     context.strokeRect(0, 0, context.canvas.width, context.canvas.height);
 
     data.forEach((el) => draw(context, el));
@@ -19,9 +21,7 @@ const Canvas: React.FC<Props<any>> = (props: Props<any>) => {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
   }, [data, draw]);
 
-  return (
-    <canvas ref={canvasRef} width={1920} height={720} {...rest}></canvas>
-  );
+  return <canvas ref={canvasRef} width={1920} height={720} {...rest}></canvas>;
 };
 
 export default Canvas;
