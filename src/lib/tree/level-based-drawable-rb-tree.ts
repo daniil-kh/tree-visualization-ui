@@ -17,6 +17,13 @@ class LevelBasedDrawableRBTree<T> extends RBTree<T> {
     this._layerAdjustment = [];
   }
 
+  set xAdjustment(xAdjustment: number) {
+    this._xAdjustment = xAdjustment;
+  }
+  set yAdjustment(yAdjustment: number) {
+    this._yAdjustment = yAdjustment;
+  }
+
   protected isLeaf(node: INode): boolean {
     if (node === null) return true;
     if (node.left === null && node.right === null) return true;
@@ -38,7 +45,7 @@ class LevelBasedDrawableRBTree<T> extends RBTree<T> {
       } else {
         this.root.x = this.root.left.x;
       }
-    } else {
+    } else if (this.root.right !== null) {
       this.calculateNodesPositions(this.root.right, 0, 1);
       this.root.x = this.root.right.x;
     }
@@ -95,7 +102,6 @@ class LevelBasedDrawableRBTree<T> extends RBTree<T> {
 
   protected getArrayOfNodes(node: RBNode<T>): Array<RawDrawableNode<T>> {
     if (node === null) return [];
-
     let objToPush: RawDrawableNode<T> = {
       x: node.x,
       y: node.y,
@@ -114,14 +120,21 @@ class LevelBasedDrawableRBTree<T> extends RBTree<T> {
   }
 
   public getNodes(): Array<RawDrawableNode<T>> {
+    if (this.root === null) return [];
     this.positionNodes();
     this.forEachNode(
       this.root,
       (node: INode) => (node.x = node.x + this._xAdjustment)
     );
     let nodes = this.getArrayOfNodes(this.root as RBNode<T>);
-    console.log(nodes);
     return nodes;
+  }
+
+  public applyAdjustment(): void {
+    this.forEachNode(this.root, (node: INode) => {
+      node.x += this._xAdjustment;
+      node.y += this._yAdjustment;
+    });
   }
 }
 
