@@ -41,9 +41,7 @@ export abstract class INode extends PositionedNode {
   protected abstract _right: INode;
   protected abstract _left: INode;
   protected abstract _parent: INode;
-  constructor() {
-    super();
-  }
+
   public abstract clone(): INode;
   public abstract equal(node: INode): boolean;
   public abstract compare(node: INode): number;
@@ -60,7 +58,7 @@ export abstract class INode extends PositionedNode {
   public abstract set left(node: INode);
 }
 
-export type Color = "RED" | "BLACK" | "DOUBLE BLACK";
+export type Color = 'RED' | 'BLACK' | 'DOUBLE BLACK';
 
 export type ColorsConstant = {
   red: Color;

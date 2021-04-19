@@ -3,12 +3,9 @@ import * as TreeLib from "../../lib/tree/index";
 import { RawDrawableNode, DrawableNode } from "../../global.types";
 
 export const getDrawableTree = (
-  tree: TreeLib.BTree<number>
+  tree: TreeLib.LevelBasedDrawableTree<number>
 ): Array<DrawableNode<number>> => {
-  const nodes: Array<RawDrawableNode<number>> = tree.getNodes({
-    x: 960,
-    y: 50,
-  });
+  const nodes: Array<RawDrawableNode<number>> = tree.getNodes();
 
   return nodes.map(
     (node): DrawableNode<number> => ({ ...node, shape: "circle", fill: false })
