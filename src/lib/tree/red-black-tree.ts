@@ -35,7 +35,6 @@ class RBTree<T> extends BTree<T> {
       this.root.color = COLORS.black;
       return;
     }
-
     if (node.parent.color === node.color && node.parent.parent !== null) {
       if (node.parent.parent.left?.equal(node.parent)) {
         if (
@@ -77,7 +76,6 @@ class RBTree<T> extends BTree<T> {
     if (node.parent.left?.equal(node)) {
       if (node.parent.parent.left?.equal(node.parent)) {
         this.rightRotation(node.parent.parent);
-        console.log([node.parent, node.parent.left, node.parent.right]);
         if (!deletion) {
           node.parent.colorFlip();
           node.parent.right.colorFlip();
@@ -88,7 +86,6 @@ class RBTree<T> extends BTree<T> {
         }
       } else {
         this.rightLeftRotation(node.parent.parent);
-        console.log([node, node.left, node.right]);
         if (!deletion) {
           node.colorFlip();
           node.left.colorFlip();
@@ -107,7 +104,6 @@ class RBTree<T> extends BTree<T> {
         }
       } else {
         this.leftRotation(node.parent.parent);
-        console.log([node.parent, node.parent.left, node.parent.right]);
         if (!deletion) {
           node.parent.colorFlip();
           node.parent.left.colorFlip();
