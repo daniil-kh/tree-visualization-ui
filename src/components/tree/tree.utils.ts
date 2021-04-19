@@ -5,8 +5,13 @@ import { RawDrawableNode, DrawableNode } from "../../global.types";
 export const getDrawableTree = (
   tree: TreeLib.LevelBasedDrawableTree<number>
 ): Array<DrawableNode<number>> => {
-  const nodes: Array<RawDrawableNode<number>> = tree.getNodes();
+  let nodes: Array<RawDrawableNode<number>> = tree.getNodes();
+  if (nodes.length <= 0) return [];
 
+  let widthAdjustment =
+    (window.innerWidth * 0.8 - (nodes[nodes.length - 1].x - nodes[0].x)) / 2;
+  tree.xAdjustment = widthAdjustment;
+  nodes = tree.getNodes();
   return nodes.map(
     (node): DrawableNode<number> => ({ ...node, shape: "circle", fill: false })
   );
