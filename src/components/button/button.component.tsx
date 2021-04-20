@@ -11,4 +11,4 @@ const Button: React.FC<ButtonProps> = ({ title, onClick }): JSX.Element => {
   return <ButtonContainer onClick={onClick}>{title}</ButtonContainer>;
 };
 
-export default Button;
+export default React.memo(Button);
