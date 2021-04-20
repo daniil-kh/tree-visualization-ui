@@ -26,7 +26,11 @@ function App() {
   return (
     <AppContainer>
       <Tree data={numbers} />
-      <Toolbar addCallback={addCallback} deleteCallback={deleteCallback} />
+      <Toolbar
+        addCallback={addCallback}
+        deleteCallback={deleteCallback}
+        selectTreeCallback={() => {}}
+      />
     </AppContainer>
   );
 }

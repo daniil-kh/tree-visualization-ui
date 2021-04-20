@@ -19,3 +19,5 @@ export type Coordinates = {
   x: number;
   y: number;
 };
+
+export type TreeType = "binary" | "avl" | "red-black";
