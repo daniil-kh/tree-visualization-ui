@@ -13,6 +13,7 @@ const ButtonContainer = styled.div`
   }
   text-align: center;
   min-width: 50px;
+  cursor: pointer;
 `;
 
 export default ButtonContainer;
