@@ -1,7 +1,11 @@
-import styled from "styled-components";
+import styled, { css, keyframes } from "styled-components";
 
 type DropDownContentContainerProps = {
   isOpen: any;
+};
+
+type DropDownContentProps = {
+  selected?: boolean;
 };
 
 export const DropDownContainer = styled.div`
@@ -23,21 +27,40 @@ export const DropDownContentContainer = styled.div<DropDownContentContainerProps
   margin-top: 30px;
 `;
 
-export const DropDownContent = styled.div`
+const selectedItem = css`
+  text-shadow: red 0px 0 7px;
+`;
+
+const onMouseHoverAnimation = keyframes`
+  from {transform: scale(0.8);}
+  to {transform: scale(1.1);}
+`;
+
+const onMouseHoverOffAnimation = keyframes`
+  from {transform: scale(1.1);}
+  to {transform: scale(0.8);}
+`;
+
+export const DropDownContent = styled.div<DropDownContentProps>`
   display: flex;
   flex: 1;
   cursor: pointer;
   margin: 0 2px;
-  transition: transform 0.5s;
-  transform: scale(0.8);
   border-radius: 15px;
   overflow: hidden;
   &:hover {
-    transition: transition 0.5s color 0.5s;
-    transform: scale(1.1);
+    animation-name: ${onMouseHoverAnimation};
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
   }
+
+  animation-name: ${onMouseHoverOffAnimation};
+  animation-duration: 1s;
+  animation-fill-mode: both;
+
   justify-content: center;
   width: 100%;
+  ${(props) => (props.selected ? selectedItem : null)}
 `;
 
 export const DropDownTitle = styled.div`
