@@ -18,6 +18,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 }): JSX.Element => {
   const [numberToAdd, setNumberToAdd] = useState("");
   const [numberToDelete, setNumberToDelete] = useState("");
+  const [treeType, setTreeType] = useState("binary");
 
   return (
     <ToolbarContainer>
@@ -31,7 +32,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <Button
         title="Add"
         onClick={() => {
-          addCallback(parseInt(numberToAdd, 10));
+          const parsedInt = parseInt(numberToAdd, 10);
+          if (parsedInt) addCallback(parsedInt);
           setNumberToAdd("");
         }}
       />
@@ -45,18 +47,23 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <Button
         title="Delete"
         onClick={() => {
-          deleteCallback(parseInt(numberToDelete, 10));
+          const parsedInt = parseInt(numberToDelete, 10);
+          if (parsedInt) deleteCallback(parsedInt);
           setNumberToDelete("");
         }}
       />
       <DropDown
         title="Select tree"
+        selected={treeType}
         list={[
           { name: "Binary Tree", value: "binary" },
           { name: "AVL Tree", value: "avl" },
           { name: "Red-Black Tree", value: "red-black" },
         ]}
-        onSelect={() => {}}
+        onSelect={(selected) => {
+          setTreeType(selected);
+          selectTreeCallback(selected);
+        }}
       />
     </ToolbarContainer>
   );

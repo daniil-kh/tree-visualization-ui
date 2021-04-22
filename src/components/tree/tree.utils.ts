@@ -1,6 +1,6 @@
 import * as TreeLib from "../../lib/tree/index";
 
-import { RawDrawableNode, DrawableNode } from "../../global.types";
+import { RawDrawableNode, DrawableNode, Coordinates } from "../../global.types";
 
 export const getDrawableTree = (
   tree: TreeLib.LevelBasedDrawableTree<number>
@@ -47,4 +47,32 @@ export const drawBNode = <T>(
     ctx.stroke();
   }
   ctx.strokeStyle = "#000000";
+};
+
+export const TreeConstructor = <T>(
+  type: string,
+  adjustment: Coordinates
+): TreeLib.LevelBasedDrawableTree<T> => {
+  switch (type) {
+    case "binary":
+      return new TreeLib.LevelBasedDrawableBinaryTree<T>(
+        adjustment.x,
+        adjustment.y
+      );
+    case "avl":
+      return new TreeLib.LevelBasedDrawableAVLTree<T>(
+        adjustment.x,
+        adjustment.y
+      );
+    case "red-black":
+      return new TreeLib.LevelBasedDrawableRBTree<T>(
+        adjustment.x,
+        adjustment.y
+      );
+    default:
+      return new TreeLib.LevelBasedDrawableBinaryTree<T>(
+        adjustment.x,
+        adjustment.y
+      );
+  }
 };

@@ -6,11 +6,12 @@ import Toolbar from "./components/toolbar/toolbar.component";
 
 function App() {
   const [numbers, setNumbers] = useState([] as Array<number>);
+  const [treeType, setTreeType] = useState("binary");
   const addCallback: (n: number) => void = useCallback(
     (n: number) =>
-      setNumbers((prevArray) =>
-        prevArray.indexOf(n) !== -1 ? prevArray : [...prevArray, n]
-      ),
+      setNumbers((prevArray) => {
+        return prevArray.indexOf(n) !== -1 ? prevArray : [...prevArray, n];
+      }),
     []
   );
   const deleteCallback: (n: number) => void = useCallback(
@@ -25,11 +26,11 @@ function App() {
 
   return (
     <AppContainer>
-      <Tree data={numbers} />
+      <Tree data={numbers} treeType={treeType} />
       <Toolbar
         addCallback={addCallback}
         deleteCallback={deleteCallback}
-        selectTreeCallback={() => {}}
+        selectTreeCallback={setTreeType}
       />
     </AppContainer>
   );
