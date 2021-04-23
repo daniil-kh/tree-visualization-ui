@@ -1,4 +1,10 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 
 type Props<T> = { draw: DrawFunction<T>; data: Array<any> };
 type DrawFunction<T> = (
@@ -14,11 +20,13 @@ const Canvas: React.FC<Props<any>> = (props: Props<any>) => {
   const [height, setHeight] = useState(window.innerHeight * 0.5);
 
   const drawAll = useCallback(
-    (context: CanvasRenderingContext2D) =>
+    (context: CanvasRenderingContext2D, width: number) =>
       data.forEach((el) => {
-        let widthAdjustment =
-          (width - (data[data.length - 1].x - data[0].x)) / 2;
-        requestAnimationFrame(() => draw(context, el, widthAdjustment));
+        requestAnimationFrame(() => {
+          let widthAdjustment =
+            (width - (data[data.length - 1].x - data[0].x)) / 2;
+          draw(context, el, widthAdjustment);
+        });
       }),
     [data, draw, width]
   );
@@ -44,10 +52,10 @@ const Canvas: React.FC<Props<any>> = (props: Props<any>) => {
     requestAnimationFrame(() =>
       context.strokeRect(0, 0, context.canvas.width, context.canvas.height)
     );
-    drawAll(context);
+    drawAll(context, window.innerWidth * 0.8);
   }, [drawAll]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.addEventListener("resize", resize);
 
     return () => {
@@ -62,7 +70,7 @@ const Canvas: React.FC<Props<any>> = (props: Props<any>) => {
     requestAnimationFrame(() =>
       context.strokeRect(0, 0, context.canvas.width, context.canvas.height)
     );
-    drawAll(context);
+    drawAll(context, context.canvas.width);
 
     return () => {
       requestAnimationFrame(() =>
