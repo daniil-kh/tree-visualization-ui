@@ -3,8 +3,8 @@ import React from "react";
 import Canvas from "../canvas/canvas.component";
 
 import { getDrawableTree, drawBNode, TreeConstructor } from "./tree.utils";
-
 import * as TreeLib from "../../lib/tree/index";
+
 import { DrawableNode } from "../../global.types";
 
 interface TreeProps {
@@ -23,8 +23,11 @@ const Tree: React.FC<TreeProps> = ({ data, treeType }): JSX.Element => {
   const drawableArr: Array<DrawableNode<number>> = getDrawableTree(tree);
 
   return (
-    <Canvas data={drawableArr} draw={(ctx, el) => drawBNode<number>(ctx, el)} />
+    <Canvas
+      data={drawableArr}
+      draw={(ctx, el, adj) => drawBNode<number>(ctx, el, adj)}
+    />
   );
 };
 
-export default Tree;
+export default React.memo(Tree);

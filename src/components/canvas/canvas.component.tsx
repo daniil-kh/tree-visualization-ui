@@ -1,7 +1,11 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 
 type Props<T> = { draw: DrawFunction<T>; data: Array<any> };
-type DrawFunction<T> = (ctx: CanvasRenderingContext2D, element: T) => void;
+type DrawFunction<T> = (
+  ctx: CanvasRenderingContext2D,
+  element: T,
+  adj: number
+) => void;
 
 const Canvas: React.FC<Props<any>> = (props: Props<any>) => {
   const { data, draw } = props;
@@ -9,37 +13,63 @@ const Canvas: React.FC<Props<any>> = (props: Props<any>) => {
   const [width, setWidth] = useState(window.innerWidth * 0.8);
   const [height, setHeight] = useState(window.innerHeight * 0.5);
 
-  const resize = () => {
+  const drawAll = useCallback(
+    (context: CanvasRenderingContext2D) =>
+      data.forEach((el) => {
+        let widthAdjustment =
+          (width - (data[data.length - 1].x - data[0].x)) / 2;
+        requestAnimationFrame(() => draw(context, el, widthAdjustment));
+      }),
+    [data, draw, width]
+  );
+
+  const resize = useCallback(() => {
     const canvas: HTMLCanvasElement = canvasRef.current!;
     const context: CanvasRenderingContext2D = canvas.getContext("2d")!;
 
+    requestAnimationFrame(() =>
+      context.clearRect(0, 0, canvas.width, canvas.height)
+    );
+
+    const prevWidth = canvas.width;
+    const prevHeight = canvas.height;
+
     canvas.width = window.innerWidth * 0.8;
     canvas.height = window.innerHeight * 0.5;
+    context.scale(canvas.width / prevWidth, canvas.height / prevHeight);
+
     setHeight(window.innerHeight * 0.5);
     setWidth(window.innerWidth * 0.8);
 
-    context.strokeRect(0, 0, context.canvas.width, context.canvas.height);
-  };
+    requestAnimationFrame(() =>
+      context.strokeRect(0, 0, context.canvas.width, context.canvas.height)
+    );
+    drawAll(context);
+  }, [drawAll]);
 
   useEffect(() => {
     window.addEventListener("resize", resize);
 
-    return () => window.removeEventListener("resize", () => resize);
-  });
+    return () => {
+      window.removeEventListener("resize", () => resize);
+    };
+  }, [resize]);
 
   useEffect(() => {
     const canvas: HTMLCanvasElement = canvasRef.current!;
     const context: CanvasRenderingContext2D = canvas.getContext("2d")!;
 
-    context.restore();
+    requestAnimationFrame(() =>
+      context.strokeRect(0, 0, context.canvas.width, context.canvas.height)
+    );
+    drawAll(context);
 
-    context.strokeRect(0, 0, context.canvas.width, context.canvas.height);
-
-    data.forEach((el) => draw(context, el));
-
-    return () =>
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-  }, [data, draw]);
+    return () => {
+      requestAnimationFrame(() =>
+        context.clearRect(0, 0, canvas.width, canvas.height)
+      );
+    };
+  }, [data, drawAll]);
 
   return (
     <canvas ref={canvasRef} width={width} height={height}>
